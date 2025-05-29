@@ -2,7 +2,7 @@ public class Candidato {
     private int id;
     private String nome;
     private String partido;
-    private int numero;
+    private int numero; //numero visivel no boletim de voto
 
     public Candidato(int id, String nome, String partido, int numero) {
         this.id = id;
