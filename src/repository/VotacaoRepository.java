@@ -25,12 +25,9 @@ public class VotacaoRepository {
 
     public void iniciarVotacao() {
         votacao.iniciarVotacao();
-        votacao.setDataInicio(System.currentTimeMillis());
-        votacao.setDataFim(null);
     }
 
     public void encerrarVotacao() {
         votacao.encerrarVotacao();
-        votacao.setDataFim(System.currentTimeMillis());
     }
 }

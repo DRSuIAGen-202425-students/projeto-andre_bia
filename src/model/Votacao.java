@@ -46,7 +46,4 @@ public class Votacao {
                 '}';
     }
 
-    public void setDataInicio(LocalDateTime l) {
-        this.dataInicio = l;
-    }
 }
