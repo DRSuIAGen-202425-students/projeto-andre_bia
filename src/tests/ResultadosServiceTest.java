@@ -5,7 +5,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import services.ResultadosService;
-import models.Candidato;
+import model.Candidato;
 
 import java.util.Map;
 

@@ -8,7 +8,7 @@ public class VotacaoRepository {
 
     public VotacaoRepository() {
         // Inicialmente, votação não está ativa e sem datas definidas
-        this.votacao = new Votacao(false, null, null);
+        this.votacao = new Votacao();
     }
 
     public Votacao getVotacao() {
@@ -24,13 +24,13 @@ public class VotacaoRepository {
     }
 
     public void iniciarVotacao() {
-        votacao.setAtiva(true);
+        votacao.iniciarVotacao();
         votacao.setDataInicio(System.currentTimeMillis());
         votacao.setDataFim(null);
     }
 
     public void encerrarVotacao() {
-        votacao.setAtiva(false);
+        votacao.encerrarVotacao();
         votacao.setDataFim(System.currentTimeMillis());
     }
 }

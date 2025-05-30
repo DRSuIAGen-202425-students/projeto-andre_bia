@@ -45,4 +45,8 @@ public class Votacao {
                 ", dataFim=" + dataFim +
                 '}';
     }
+
+    public void setDataInicio(LocalDateTime l) {
+        this.dataInicio = l;
+    }
 }

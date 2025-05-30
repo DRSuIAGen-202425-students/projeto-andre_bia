@@ -48,15 +48,15 @@ public class VotacaoService {
         return votacao.isAtiva();
     }
 
-    public void votar(Eleitor eleitor, Candidato candidato) {
+    public boolean votar(Eleitor eleitor, Candidato candidato) {
         if (!votacao.isAtiva()) {
             System.out.println("⚠️ A votação não está ativa.");
-            return;
+            return false;
         }
 
         if (eleitor.isVotou()) {
             System.out.println("❌ Este eleitor já votou.");
-            return;
+            return false;
         }
 
         // Regista o voto
@@ -69,8 +69,9 @@ public class VotacaoService {
 
         // Regista no histórico de votos
         Voto voto = new Voto(++contadorVotos, eleitor.getId(), candidato.getId());
-        votoRepository.registarVoto(voto);
+        votoRepository.adicionarVoto(voto);
 
         System.out.println("🗳️ Voto registado com sucesso!");
+        return true;
     }
 }

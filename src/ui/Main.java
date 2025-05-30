@@ -8,7 +8,7 @@ import repository.EleitorRepository;
 import repository.UtilizadorRepository;
 import services.AutenticacaoService;
 import services.GestaoCandidatosService;
-import service.GestaoEleitoresService;
+import services.GestaoEleitoresService;
 import services.VotacaoService;
 
 import java.util.Scanner;
