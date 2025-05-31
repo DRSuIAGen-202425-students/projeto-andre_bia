@@ -7,14 +7,14 @@ import java.util.List;
 
 public class UtilizadorRepository {
 
-    private List<Utilizador> utilizadores;
-
-    public UtilizadorRepository() {
-        this.utilizadores = new ArrayList<>();
-    }
+    private final List<Utilizador> utilizadores = new ArrayList<>();
+    private int ultimoId = 0;
 
     public void adicionarUtilizador(Utilizador utilizador) {
         utilizadores.add(utilizador);
+        if (utilizador.getId() > ultimoId) {
+            ultimoId = utilizador.getId();
+        }
     }
 
     public void editarUtilizador(Utilizador utilizadorAtualizado) {
@@ -24,11 +24,41 @@ public class UtilizadorRepository {
                 return;
             }
         }
-        System.out.println("❌ Utilizador não encontrado para edição.");
     }
 
-    public void removerUtilizadorPorId(int id) {
+    public void removerUtilizador(int id) {
         utilizadores.removeIf(u -> u.getId() == id);
+    }
+
+    public Utilizador login(String username, String password) {
+        for (Utilizador u : utilizadores) {
+            if (u.getUsername().equals(username) && u.getPassword().equals(password)) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    public Utilizador getUtilizadorPorId(int id) {
+        for (Utilizador u : utilizadores) {
+            if (u.getId() == id) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    public List<Utilizador> listarUtilizadores() {
+        return new ArrayList<>(utilizadores);
+    }
+
+    public int gerarNovoId() {
+        return ++ultimoId;
+    }
+
+    public void limparTodos() {
+        utilizadores.clear();
+        ultimoId = 0;
     }
 
     public Utilizador encontrarPorUsername(String username) {
@@ -38,9 +68,5 @@ public class UtilizadorRepository {
             }
         }
         return null;
-    }
-
-    public List<Utilizador> listarTodos() {
-        return new ArrayList<>(utilizadores);
     }
 }

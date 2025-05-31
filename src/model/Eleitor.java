@@ -4,9 +4,9 @@ public class Eleitor extends Utilizador {
 
     private boolean votou;
 
-    public Eleitor(int id, String nome, String username, String password, boolean votou) {
+    public Eleitor(int id, String nome, String username, String password) {
         super(id, nome, username, password, "ELEITOR");
-        this.votou = votou;
+        this.votou = false;
     }
 
     public boolean isVotou() {

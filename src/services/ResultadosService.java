@@ -3,82 +3,47 @@ package services;
 import model.Candidato;
 import repository.CandidatoRepository;
 
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 public class ResultadosService {
 
-    private CandidatoRepository candidatoRepository;
+    private final CandidatoRepository candidatoRepository;
 
     public ResultadosService(CandidatoRepository candidatoRepository) {
         this.candidatoRepository = candidatoRepository;
     }
 
-    /**
-     * Calcula o total de votos de todos os candidatos.
-     *
-     * @return total de votos
-     */
-    public int calcularTotalVotos() {
-        int total = 0;
-        for (Candidato c : candidatoRepository.listarTodos()) {
-            total += c.getNumeroVotos();
-        }
-        return total;
-    }
+    public void mostrarResultados() {
+        List<Candidato> candidatos = candidatoRepository.listarCandidatos();
+        int totalVotos = calcularTotalVotos(candidatos);
 
-    /**
-     * Calcula a percentagem de votos de cada candidato.
-     *
-     * @return mapa com candidato e respetiva percentagem
-     */
-    public Map<Candidato, Double> calcularPercentagens() {
-        List<Candidato> candidatos = candidatoRepository.listarTodos();
-        int totalVotos = calcularTotalVotos();
-
-        Map<Candidato, Double> percentagens = new HashMap<>();
         if (totalVotos == 0) {
-            // Sem votos ainda, percentagens a zero
-            for (Candidato c : candidatos) {
-                percentagens.put(c, 0.0);
-            }
-            return percentagens;
+            System.out.println("⚠️ Nenhum voto foi registado.");
+            return;
         }
 
+        System.out.println("\n📊 Resultados da Votação:");
         for (Candidato c : candidatos) {
-            double percent = (c.getNumeroVotos() * 100.0) / totalVotos;
-            percentagens.put(c, percent);
+            int votos = c.getNumeroVotos();
+            double percentagem = (votos * 100.0) / totalVotos;
+            System.out.printf("🧑 %s (%s): %d votos (%.2f%%)%n", c.getNome(), c.getPartido(), votos, percentagem);
         }
-        return percentagens;
+
+        Candidato vencedor = determinarVencedor(candidatos);
+        System.out.printf("\n🏆 Vencedor: %s (%s) com %d votos.%n",
+                vencedor.getNome(), vencedor.getPartido(), vencedor.getNumeroVotos());
     }
 
-    /**
-     * Determina o vencedor da votação (candidato com mais votos).
-     *
-     * @return candidato vencedor ou null se empate ou nenhum voto
-     */
-    public Candidato determinarVencedor() {
-        List<Candidato> candidatos = candidatoRepository.listarTodos();
+    private int calcularTotalVotos(List<Candidato> candidatos) {
+        return candidatos.stream()
+                .mapToInt(Candidato::getNumeroVotos)
+                .sum();
+    }
 
-        if (candidatos.isEmpty()) {
-            return null;
-        }
-
-        Candidato vencedor = null;
-        int maxVotos = -1;
-        boolean empate = false;
-
-        for (Candidato c : candidatos) {
-            if (c.getNumeroVotos() > maxVotos) {
-                maxVotos = c.getNumeroVotos();
-                vencedor = c;
-                empate = false;
-            } else if (c.getNumeroVotos() == maxVotos) {
-                empate = true;
-            }
-        }
-
-        return empate ? null : vencedor;
+    private Candidato determinarVencedor(List<Candidato> candidatos) {
+        return candidatos.stream()
+                .max(Comparator.comparingInt(Candidato::getNumeroVotos))
+                .orElse(null);
     }
 }

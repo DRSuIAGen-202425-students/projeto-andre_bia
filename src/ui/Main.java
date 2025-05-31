@@ -1,71 +1,67 @@
 package ui;
 
-import model.Administrador;
-import model.Eleitor;
-import model.Utilizador;
-import repository.CandidatoRepository;
-import repository.EleitorRepository;
-import repository.UtilizadorRepository;
-import services.AutenticacaoService;
-import services.GestaoCandidatosService;
-import services.GestaoEleitoresService;
-import services.VotacaoService;
+import model.*;
+import repository.*;
+import services.*;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
 
-    private static UtilizadorRepository utilizadorRepo = new UtilizadorRepository();
-    private static CandidatoRepository candidatoRepo = new CandidatoRepository();
-    private static EleitorRepository eleitorRepo = new EleitorRepository();
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final UtilizadorRepository utilizadorRepo = new UtilizadorRepository();
+    private static final EleitorRepository eleitorRepo = new EleitorRepository();
+    private static final CandidatoRepository candidatoRepo = new CandidatoRepository();
+    private static final VotoRepository votoRepo = new VotoRepository();
+    private static final Votacao votacao = new Votacao();
 
-    private static AutenticacaoService autenticacaoService = new AutenticacaoService(utilizadorRepo);
-    private static GestaoCandidatosService gestaoCandidatosService = new GestaoCandidatosService(candidatoRepo);
-    private static GestaoEleitoresService gestaoEleitoresService = new GestaoEleitoresService(eleitorRepo);
-    private static VotacaoService votacaoService = new VotacaoService(candidatoRepo, eleitorRepo);
-
-    private static Scanner scanner = new Scanner(System.in);
+    private static final AutenticacaoService authService = new AutenticacaoService(utilizadorRepo);
+    private static final GestaoCandidatosService candidatosService = new GestaoCandidatosService(candidatoRepo);
+    //private static final GestaoEleitoresService eleitoresService = new GestaoEleitoresService(eleitorRepo);
+    private static final VotacaoService votacaoService = new VotacaoService(votacao, candidatoRepo, eleitorRepo, votoRepo);
+    private static final ResultadosService resultadosService = new ResultadosService(candidatoRepo);
 
     public static void main(String[] args) {
-        carregarDadosDemo();
-
-        System.out.println("=== Sistema de Votação ===");
+        seedDados(); // cria utilizadores de exemplo
 
         while (true) {
-            System.out.print("\nUsername: ");
+            System.out.println("\n===== SISTEMA DE VOTAÇÃO =====");
+            System.out.print("Username (0 para sair): ");
             String username = scanner.nextLine();
-            System.out.print("Password: ");
+            if (username.equals("0")) break;
+
+            System.out.print("Password (0 para sair): ");
             String password = scanner.nextLine();
+            if (password.equals("0")) break;
 
-            Utilizador utilizador = autenticacaoService.login(username, password);
-
-            if (utilizador == null) {
-                System.out.println("❌ Credenciais inválidas. Tenta novamente.");
+            Utilizador user = authService.login(username, password);
+            if (user == null) {
+                System.out.println("❌ Credenciais inválidas. Tente novamente.");
                 continue;
             }
 
-            if (utilizador instanceof Administrador) {
-                menuAdministrador((Administrador) utilizador);
-            } else if (utilizador instanceof Eleitor) {
-                menuEleitor((Eleitor) utilizador);
+            if (user instanceof Administrador) {
+                menuAdministrador();
+            } else if (user instanceof Eleitor) {
+                menuEleitor((Eleitor) user);
             }
         }
+
+        System.out.println("👋 Programa encerrado.");
     }
 
-    private static void menuAdministrador(Administrador admin) {
+    private static void menuAdministrador() {
         while (true) {
-            System.out.println("\n--- Menu Administrador ---");
+            System.out.println("\n===== MENU ADMINISTRADOR =====");
             System.out.println("1. Gerir Candidatos");
             System.out.println("2. Gerir Eleitores");
-            System.out.println("3. Iniciar Votação");
-            System.out.println("4. Encerrar Votação");
-            System.out.println("5. Ver Resultados");
+            System.out.println("3. Iniciar/Encerrar Votação");
+            System.out.println("4. Ver Resultados");
             System.out.println("0. Logout");
-            System.out.print("Escolha: ");
+            String opcao = scanner.nextLine();
 
-            String escolha = scanner.nextLine();
-
-            switch (escolha) {
+            switch (opcao) {
                 case "1":
                     gerirCandidatos();
                     break;
@@ -73,209 +69,165 @@ public class Main {
                     gerirEleitores();
                     break;
                 case "3":
-                    votacaoService.iniciarVotacao();
+                    if (votacaoService.isVotacaoAtiva()) {
+                        votacaoService.encerrarVotacao();
+                    } else {
+                        votacaoService.iniciarVotacao();
+                    }
                     break;
                 case "4":
-                    votacaoService.encerrarVotacao();
-                    break;
-                case "5":
-                    mostrarResultados();
+                    resultadosService.mostrarResultados();
                     break;
                 case "0":
-                    System.out.println("Logout realizado.");
                     return;
                 default:
-                    System.out.println("Opção inválida.");
+                    System.out.println("⚠️ Opção inválida.");
             }
-        }
-    }
-
-    private static void gerirCandidatos() {
-        System.out.println("\n--- Gestão de Candidatos ---");
-        System.out.println("1. Inserir Candidato");
-        System.out.println("2. Editar Candidato");
-        System.out.println("3. Remover Candidato");
-        System.out.println("0. Voltar");
-        System.out.print("Escolha: ");
-
-        String opcao = scanner.nextLine();
-        switch (opcao) {
-            case "1":
-                System.out.print("ID: ");
-                int id = Integer.parseInt(scanner.nextLine());
-                System.out.print("Nome: ");
-                String nome = scanner.nextLine();
-                System.out.print("Partido: ");
-                String partido = scanner.nextLine();
-
-                gestaoCandidatosService.inserirCandidato(new model.Candidato(id, nome, partido));
-                break;
-            case "2":
-                System.out.print("ID do candidato a editar: ");
-                int idEditar = Integer.parseInt(scanner.nextLine());
-                model.Candidato cExistente = candidatoRepo.encontrarPorId(idEditar);
-                if (cExistente == null) {
-                    System.out.println("Candidato não encontrado.");
-                    break;
-                }
-                System.out.print("Novo nome: ");
-                String novoNome = scanner.nextLine();
-                System.out.print("Novo partido: ");
-                String novoPartido = scanner.nextLine();
-
-                cExistente.setNome(novoNome);
-                cExistente.setPartido(novoPartido);
-                gestaoCandidatosService.editarCandidato(cExistente);
-                break;
-            case "3":
-                System.out.print("ID do candidato a remover: ");
-                int idRemover = Integer.parseInt(scanner.nextLine());
-                gestaoCandidatosService.removerCandidato(idRemover);
-                break;
-            case "0":
-                return;
-            default:
-                System.out.println("Opção inválida.");
-        }
-    }
-
-    private static void gerirEleitores() {
-        System.out.println("\n--- Gestão de Eleitores ---");
-        System.out.println("1. Inserir Eleitor");
-        System.out.println("2. Editar Eleitor");
-        System.out.println("3. Remover Eleitor");
-        System.out.println("0. Voltar");
-        System.out.print("Escolha: ");
-
-        String opcao = scanner.nextLine();
-        switch (opcao) {
-            case "1":
-                System.out.print("ID: ");
-                int id = Integer.parseInt(scanner.nextLine());
-                System.out.print("Nome: ");
-                String nome = scanner.nextLine();
-                System.out.print("Username: ");
-                String username = scanner.nextLine();
-                System.out.print("Password: ");
-                String password = scanner.nextLine();
-
-                gestaoEleitoresService.inserirEleitor(new model.Eleitor(id, nome, username, password));
-                break;
-            case "2":
-                System.out.print("ID do eleitor a editar: ");
-                int idEditar = Integer.parseInt(scanner.nextLine());
-                model.Eleitor eExistente = eleitorRepo.encontrarPorId(idEditar);
-                if (eExistente == null) {
-                    System.out.println("Eleitor não encontrado.");
-                    break;
-                }
-                System.out.print("Novo nome: ");
-                String novoNome = scanner.nextLine();
-                System.out.print("Novo username: ");
-                String novoUsername = scanner.nextLine();
-                System.out.print("Nova password: ");
-                String novaPassword = scanner.nextLine();
-
-                eExistente.setNome(novoNome);
-                eExistente.setUsername(novoUsername);
-                eExistente.setPassword(novaPassword);
-                gestaoEleitoresService.editarEleitor(eExistente);
-                break;
-            case "3":
-                System.out.print("ID do eleitor a remover: ");
-                int idRemover = Integer.parseInt(scanner.nextLine());
-                gestaoEleitoresService.removerEleitor(idRemover);
-                break;
-            case "0":
-                return;
-            default:
-                System.out.println("Opção inválida.");
-        }
-    }
-
-    private static void mostrarResultados() {
-        service.ResultadosService resultadosService = new service.ResultadosService(candidatoRepo);
-
-        int totalVotos = resultadosService.calcularTotalVotos();
-        System.out.println("\n--- Resultados da Votação ---");
-        System.out.println("Total de votos: " + totalVotos);
-
-        var percentagens = resultadosService.calcularPercentagens();
-        percentagens.forEach((candidato, percent) -> {
-            System.out.printf("Candidato: %s - %.2f%% (%d votos)\n",
-                    candidato.getNome(), percent, candidato.getNumeroVotos());
-        });
-
-        var vencedor = resultadosService.determinarVencedor();
-        if (vencedor != null) {
-            System.out.println("Vencedor: " + vencedor.getNome());
-        } else {
-            System.out.println("Não há vencedor (empate ou sem votos).");
         }
     }
 
     private static void menuEleitor(Eleitor eleitor) {
         while (true) {
-            System.out.println("\n--- Menu Eleitor ---");
-            System.out.println("1. Votar");
+            System.out.println("\n===== MENU ELEITOR =====");
+            if (!eleitor.isVotou() && votacaoService.isVotacaoAtiva()) {
+                System.out.println("1. Votar");
+            }
             System.out.println("0. Logout");
-            System.out.print("Escolha: ");
+            String opcao = scanner.nextLine();
 
-            String escolha = scanner.nextLine();
+            if (opcao.equals("0")) return;
 
-            switch (escolha) {
-                case "1":
-                    if (!votacaoService.isVotacaoAtiva()) {
-                        System.out.println("A votação não está ativa.");
-                        break;
-                    }
-                    if (eleitor.isVotou()) {
-                        System.out.println("Você já votou.");
-                        break;
-                    }
+            if (opcao.equals("1") && !eleitor.isVotou() && votacaoService.isVotacaoAtiva()) {
+                List<Candidato> candidatos = candidatoRepo.listarCandidatos();
+                System.out.println("Candidatos:");
+                for (Candidato c : candidatos) {
+                    System.out.println(c.getId() + " - " + c.getNome() + " (" + c.getPartido() + ")");
+                }
+                System.out.print("ID do candidato: ");
+                String idStr = scanner.nextLine();
+                if (idStr.equals("0")) return;
 
-                    System.out.println("\nCandidatos disponíveis:");
-                    candidatoRepo.listarTodos().forEach(c ->
-                            System.out.printf("%d - %s (%s)\n", c.getId(), c.getNome(), c.getPartido())
-                    );
-
-                    System.out.print("Escolha o ID do candidato: ");
-                    int idCandidato = Integer.parseInt(scanner.nextLine());
-                    model.Candidato escolhido = candidatoRepo.encontrarPorId(idCandidato);
-
-                    if (escolhido == null) {
-                        System.out.println("Candidato inválido.");
-                        break;
-                    }
-
-                    boolean votoRealizado = votacaoService.votar(eleitor, escolhido);
-                    if (votoRealizado) {
-                        System.out.println("Voto registado com sucesso!");
+                try {
+                    int id = Integer.parseInt(idStr);
+                    Candidato candidato = candidatoRepo.getCandidatoPorId(id);
+                    if (candidato == null) {
+                        System.out.println("❌ Candidato não encontrado.");
                     } else {
-                        System.out.println("Erro ao votar.");
+                        votacaoService.votar(eleitor, candidato);
                     }
-                    break;
-                case "0":
-                    System.out.println("Logout realizado.");
-                    return;
-                default:
-                    System.out.println("Opção inválida.");
+                } catch (NumberFormatException e) {
+                    System.out.println("⚠️ ID inválido.");
+                }
+            } else {
+                System.out.println("⚠️ Não pode votar neste momento.");
             }
         }
     }
 
-    private static void carregarDadosDemo() {
-        // Adiciona admin e eleitores demo para teste
-        Administrador admin = new Administrador(1, "Admin", "admin", "admin");
-        Eleitor e1 = new Eleitor(2, "Alice", "alice123", "senha1");
-        Eleitor e2 = new Eleitor(3, "Bob", "bob123", "senha2");
+    private static void gerirCandidatos() {
+        while (true) {
+            System.out.println("\n--- Gestão de Candidatos ---");
+            System.out.println("1. Adicionar");
+            System.out.println("2. Editar");
+            System.out.println("3. Remover");
+            System.out.println("0. Voltar");
+            String opcao = scanner.nextLine();
 
+            switch (opcao) {
+                case "1":
+                    System.out.print("Nome: ");
+                    String nome = scanner.nextLine();
+                    System.out.print("Partido: ");
+                    String partido = scanner.nextLine();
+                    candidatosService.inserir(nome, partido);
+                    break;
+                case "2":
+                    System.out.print("ID do candidato: ");
+                    int idEditar = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Novo nome: ");
+                    String novoNome = scanner.nextLine();
+                    System.out.print("Novo partido: ");
+                    String novoPartido = scanner.nextLine();
+                    candidatosService.editar(idEditar, novoNome, novoPartido);
+                    break;
+                case "3":
+                    System.out.print("ID do candidato a remover: ");
+                    int idRemover = Integer.parseInt(scanner.nextLine());
+                    candidatosService.remover(idRemover);
+                    break;
+                case "0":
+                    return;
+                default:
+                    System.out.println("⚠️ Opção inválida.");
+            }
+        }
+    }
+
+    private static void gerirEleitores() {
+        while (true) {
+            System.out.println("\n--- Gestão de Eleitores ---");
+            System.out.println("1. Adicionar");
+            System.out.println("2. Editar");
+            System.out.println("3. Remover");
+            System.out.println("0. Voltar");
+            String opcao = scanner.nextLine();
+
+            switch (opcao) {
+                case "1":
+                    System.out.print("Nome: ");
+                    String nome = scanner.nextLine();
+                    System.out.print("Username: ");
+                    String username = scanner.nextLine();
+                    System.out.print("Password: ");
+                    String password = scanner.nextLine();
+                    Eleitor novo = new Eleitor(utilizadorRepo.gerarNovoId(), nome, username, password);
+                    utilizadorRepo.adicionarUtilizador(novo);
+                    eleitorRepo.adicionarEleitor(novo);
+                    System.out.println("✅ Eleitor adicionado.");
+                    break;
+                case "2":
+                    System.out.print("ID do eleitor: ");
+                    int idEditar = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Novo nome: ");
+                    String novoNome = scanner.nextLine();
+                    System.out.print("Nova password: ");
+                    String novaPass = scanner.nextLine();
+                    Eleitor eleitorEdit = eleitorRepo.getEleitorPorId(idEditar);
+                    if (eleitorEdit != null) {
+                        eleitorEdit.setNome(novoNome);
+                        eleitorEdit.setPassword(novaPass);
+                        eleitorRepo.atualizarEleitor(eleitorEdit);
+                        utilizadorRepo.editarUtilizador(eleitorEdit);
+                        System.out.println("✅ Eleitor atualizado.");
+                    } else {
+                        System.out.println("❌ Eleitor não encontrado.");
+                    }
+                    break;
+                case "3":
+                    System.out.print("ID do eleitor a remover: ");
+                    int idRemover = Integer.parseInt(scanner.nextLine());
+                    eleitorRepo.removerEleitor(idRemover);
+                    utilizadorRepo.removerUtilizador(idRemover);
+                    System.out.println("✅ Eleitor removido.");
+                    break;
+                case "0":
+                    return;
+                default:
+                    System.out.println("⚠️ Opção inválida.");
+            }
+        }
+    }
+
+    private static void seedDados() {
+        // Utilizadores de exemplo
+        Administrador admin = new Administrador(1, "Admin", "admin", "admin123");
+        Eleitor eleitor = new Eleitor(2, "Maria", "maria", "1234");
         utilizadorRepo.adicionarUtilizador(admin);
-        utilizadorRepo.adicionarUtilizador(e1);
-        utilizadorRepo.adicionarUtilizador(e2);
+        utilizadorRepo.adicionarUtilizador(eleitor);
+        eleitorRepo.adicionarEleitor(eleitor);
 
-        // Adiciona candidatos demo
-        candidatoRepo.adicionarCandidato(new model.Candidato(1, "Candidato A", "Partido 1"));
-        candidatoRepo.adicionarCandidato(new model.Candidato(2, "Candidato B", "Partido 2"));
+        // Candidatos de exemplo
+        candidatoRepo.adicionarCandidato(new Candidato(1, "Carlos Silva", "Partido A"));
+        candidatoRepo.adicionarCandidato(new Candidato(2, "Ana Costa", "Partido B"));
     }
 }

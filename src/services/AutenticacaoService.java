@@ -18,7 +18,7 @@ public class AutenticacaoService {
      * @param password Palavra-passe
      * @return Utilizador autenticado, ou null se falhar
      */
-    public Utilizador autenticar(String username, String password) {
+    public Utilizador login(String username, String password) {
         Utilizador utilizador = utilizadorRepository.encontrarPorUsername(username);
 
         if (utilizador != null && utilizador.getPassword().equals(password)) {
