@@ -59,4 +59,5 @@ public class Candidato {
                 ", numeroVotos=" + numeroVotos +
                 '}';
     }
+
 }

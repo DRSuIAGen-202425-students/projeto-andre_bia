@@ -3,6 +3,7 @@ package services;
 import model.Candidato;
 import repository.CandidatoRepository;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -45,5 +46,25 @@ public class ResultadosService {
         return candidatos.stream()
                 .max(Comparator.comparingInt(Candidato::getNumeroVotos))
                 .orElse(null);
+    }
+
+    public List<String> gerarResumoResultados() {
+        List<Candidato> candidatos = candidatoRepository.listarCandidatos();
+        List<String> resultado = new ArrayList<>();
+        int totalVotos = candidatos.stream().mapToInt(Candidato::getNumeroVotos).sum();
+
+        candidatos.sort(Comparator.comparingInt(Candidato::getNumeroVotos).reversed());
+
+        for (Candidato c : candidatos) {
+            double percentagem = totalVotos == 0 ? 0 : (c.getNumeroVotos() * 100.0) / totalVotos;
+            resultado.add(c.getNome() + " - " + c.getNumeroVotos() + " votos (" + String.format("%.2f", percentagem) + "%)");
+        }
+
+        if (!candidatos.isEmpty()) {
+            Candidato vencedor = candidatos.get(0);
+            resultado.add("🏆 Vencedor: " + vencedor.getNome());
+        }
+
+        return resultado;
     }
 }

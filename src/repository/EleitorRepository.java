@@ -3,6 +3,7 @@ package repository;
 import model.Eleitor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class EleitorRepository {
@@ -59,5 +60,9 @@ public class EleitorRepository {
     public void limparTodos() {
         eleitores.clear();
         ultimoId = 0;
+    }
+
+    public List<Eleitor> getTodosEleitores() {
+        return new ArrayList<>(eleitores);
     }
 }

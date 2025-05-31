@@ -48,15 +48,13 @@ public class VotacaoService {
         return votacao.isAtiva();
     }
 
-    public boolean votar(Eleitor eleitor, Candidato candidato) {
+    public void votar(Eleitor eleitor, Candidato candidato) {
         if (!votacao.isAtiva()) {
-            System.out.println("⚠️ A votação não está ativa.");
-            return false;
+            throw new IllegalStateException("⚠️ A votação não está ativa.");
         }
 
         if (eleitor.isVotou()) {
-            System.out.println("❌ Este eleitor já votou.");
-            return false;
+            throw new IllegalStateException("❌ Este eleitor já votou.");
         }
 
         // Regista o voto
@@ -72,6 +70,5 @@ public class VotacaoService {
         votoRepository.adicionarVoto(voto);
 
         System.out.println("🗳️ Voto registado com sucesso!");
-        return true;
     }
 }

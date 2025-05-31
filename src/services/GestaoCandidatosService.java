@@ -3,40 +3,44 @@ package services;
 import model.Candidato;
 import repository.CandidatoRepository;
 
+import java.util.List;
+
 public class GestaoCandidatosService {
 
-    private final CandidatoRepository candidatoRepository;
+    private final CandidatoRepository candidatoRepo;
 
-    public GestaoCandidatosService(CandidatoRepository candidatoRepository) {
-        this.candidatoRepository = candidatoRepository;
+    public GestaoCandidatosService(CandidatoRepository candidatoRepo) {
+        this.candidatoRepo = candidatoRepo;
     }
 
     public void inserir(String nome, String partido) {
-        int novoId = candidatoRepository.gerarNovoId();
+        int novoId = candidatoRepo.gerarNovoId();
         Candidato candidato = new Candidato(novoId, nome, partido);
-        candidatoRepository.adicionarCandidato(candidato);
-        System.out.println("✅ Candidato adicionado com sucesso.");
+        candidatoRepo.adicionarCandidato(candidato);
+        System.out.println("✅ Candidato adicionado.");
     }
 
     public void editar(int id, String novoNome, String novoPartido) {
-        Candidato candidato = candidatoRepository.getCandidatoPorId(id);
+        Candidato candidato = candidatoRepo.getCandidatoPorId(id);
         if (candidato != null) {
             candidato.setNome(novoNome);
             candidato.setPartido(novoPartido);
-            candidatoRepository.atualizarCandidato(candidato);
-            System.out.println("✅ Candidato atualizado com sucesso.");
+            candidatoRepo.atualizarCandidato(candidato);
+            System.out.println("✅ Candidato atualizado.");
         } else {
             System.out.println("❌ Candidato não encontrado.");
         }
     }
 
     public void remover(int id) {
-        Candidato candidato = candidatoRepository.getCandidatoPorId(id);
-        if (candidato != null) {
-            candidatoRepository.removerCandidato(id);
-            System.out.println("✅ Candidato removido com sucesso.");
-        } else {
-            System.out.println("❌ Candidato não encontrado.");
-        }
+        candidatoRepo.removerCandidato(id);
+    }
+
+    public List<Candidato> listarCandidatos() {
+        return candidatoRepo.listarCandidatos();
+    }
+
+    public Candidato getCandidatoPorId(int id) {
+        return candidatoRepo.getCandidatoPorId(id);
     }
 }

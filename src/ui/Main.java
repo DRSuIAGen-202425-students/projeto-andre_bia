@@ -10,6 +10,7 @@ import java.util.Scanner;
 public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
+
     private static final UtilizadorRepository utilizadorRepo = new UtilizadorRepository();
     private static final EleitorRepository eleitorRepo = new EleitorRepository();
     private static final CandidatoRepository candidatoRepo = new CandidatoRepository();
@@ -18,12 +19,12 @@ public class Main {
 
     private static final AutenticacaoService authService = new AutenticacaoService(utilizadorRepo);
     private static final GestaoCandidatosService candidatosService = new GestaoCandidatosService(candidatoRepo);
-    //private static final GestaoEleitoresService eleitoresService = new GestaoEleitoresService(eleitorRepo);
+    private static final GestaoEleitoresService eleitoresService = new GestaoEleitoresService(utilizadorRepo, eleitorRepo);
     private static final VotacaoService votacaoService = new VotacaoService(votacao, candidatoRepo, eleitorRepo, votoRepo);
     private static final ResultadosService resultadosService = new ResultadosService(candidatoRepo);
 
     public static void main(String[] args) {
-        seedDados(); // cria utilizadores de exemplo
+        seedDados();
 
         while (true) {
             System.out.println("\n===== SISTEMA DE VOTAÇÃO =====");
@@ -98,18 +99,19 @@ public class Main {
             if (opcao.equals("0")) return;
 
             if (opcao.equals("1") && !eleitor.isVotou() && votacaoService.isVotacaoAtiva()) {
-                List<Candidato> candidatos = candidatoRepo.listarCandidatos();
+                List<Candidato> candidatos = candidatosService.listarCandidatos();
                 System.out.println("Candidatos:");
                 for (Candidato c : candidatos) {
                     System.out.println(c.getId() + " - " + c.getNome() + " (" + c.getPartido() + ")");
                 }
+
                 System.out.print("ID do candidato: ");
                 String idStr = scanner.nextLine();
                 if (idStr.equals("0")) return;
 
                 try {
                     int id = Integer.parseInt(idStr);
-                    Candidato candidato = candidatoRepo.getCandidatoPorId(id);
+                    Candidato candidato = candidatosService.getCandidatoPorId(id);
                     if (candidato == null) {
                         System.out.println("❌ Candidato não encontrado.");
                     } else {
@@ -180,10 +182,7 @@ public class Main {
                     String username = scanner.nextLine();
                     System.out.print("Password: ");
                     String password = scanner.nextLine();
-                    Eleitor novo = new Eleitor(utilizadorRepo.gerarNovoId(), nome, username, password);
-                    utilizadorRepo.adicionarUtilizador(novo);
-                    eleitorRepo.adicionarEleitor(novo);
-                    System.out.println("✅ Eleitor adicionado.");
+                    eleitoresService.adicionarEleitor(nome, username, password);
                     break;
                 case "2":
                     System.out.print("ID do eleitor: ");
@@ -192,12 +191,8 @@ public class Main {
                     String novoNome = scanner.nextLine();
                     System.out.print("Nova password: ");
                     String novaPass = scanner.nextLine();
-                    Eleitor eleitorEdit = eleitorRepo.getEleitorPorId(idEditar);
-                    if (eleitorEdit != null) {
-                        eleitorEdit.setNome(novoNome);
-                        eleitorEdit.setPassword(novaPass);
-                        eleitorRepo.atualizarEleitor(eleitorEdit);
-                        utilizadorRepo.editarUtilizador(eleitorEdit);
+                    boolean sucesso = eleitoresService.editarEleitor(idEditar, novoNome, novaPass);
+                    if (sucesso) {
                         System.out.println("✅ Eleitor atualizado.");
                     } else {
                         System.out.println("❌ Eleitor não encontrado.");
@@ -206,8 +201,7 @@ public class Main {
                 case "3":
                     System.out.print("ID do eleitor a remover: ");
                     int idRemover = Integer.parseInt(scanner.nextLine());
-                    eleitorRepo.removerEleitor(idRemover);
-                    utilizadorRepo.removerUtilizador(idRemover);
+                    eleitoresService.removerEleitor(idRemover);
                     System.out.println("✅ Eleitor removido.");
                     break;
                 case "0":
@@ -219,14 +213,12 @@ public class Main {
     }
 
     private static void seedDados() {
-        // Utilizadores de exemplo
         Administrador admin = new Administrador(1, "Admin", "admin", "admin123");
         Eleitor eleitor = new Eleitor(2, "Maria", "maria", "1234");
         utilizadorRepo.adicionarUtilizador(admin);
         utilizadorRepo.adicionarUtilizador(eleitor);
         eleitorRepo.adicionarEleitor(eleitor);
 
-        // Candidatos de exemplo
         candidatoRepo.adicionarCandidato(new Candidato(1, "Carlos Silva", "Partido A"));
         candidatoRepo.adicionarCandidato(new Candidato(2, "Ana Costa", "Partido B"));
     }

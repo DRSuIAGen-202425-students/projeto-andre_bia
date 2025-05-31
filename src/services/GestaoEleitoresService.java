@@ -1,44 +1,40 @@
 package services;
 
-import model.Candidato;
 import model.Eleitor;
 import repository.EleitorRepository;
-
-import java.util.Collection;
-import java.util.List;
+import repository.UtilizadorRepository;
 
 public class GestaoEleitoresService {
 
-//    private EleitorRepository eleitorRepository;
-//
-//    public GestaoEleitoresService(EleitorRepository eleitorRepository) {
-//        this.eleitorRepository = eleitorRepository;
-//    }
-//
-//    public void inserirEleitor(Eleitor eleitor) {
-//        eleitorRepository.adicionarEleitor(eleitor);
-//        System.out.println("✅ Eleitor inserido com sucesso.");
-//    }
-//
-//    public void editarEleitor(Eleitor eleitorAtualizado) {
-//        boolean sucesso = eleitorRepository.atualizarEleitor(eleitorAtualizado);
-//        if (sucesso) {
-//            System.out.println("✅ Eleitor atualizado com sucesso.");
-//        } else {
-//            System.out.println("❌ Eleitor não encontrado para edição.");
-//        }
-//    }
-//
-//    public void removerEleitor(int id) {
-//        boolean sucesso = eleitorRepository.removerEleitorPorId(id);
-//        if (sucesso) {
-//            System.out.println("✅ Eleitor removido com sucesso.");
-//        } else {
-//            System.out.println("❌ Eleitor não encontrado para remoção.");
-//        }
-//    }
-//
-//    public List<Eleitor> listar() {
-//        return eleitorRepository.obterTodos();
-//    }
+    private final UtilizadorRepository utilizadorRepo;
+    private final EleitorRepository eleitorRepo;
+
+    public GestaoEleitoresService(UtilizadorRepository utilizadorRepo, EleitorRepository eleitorRepo) {
+        this.utilizadorRepo = utilizadorRepo;
+        this.eleitorRepo = eleitorRepo;
+    }
+
+    public void adicionarEleitor(String nome, String username, String password) {
+        Eleitor novo = new Eleitor(utilizadorRepo.gerarNovoId(), nome, username, password);
+        utilizadorRepo.adicionarUtilizador(novo);
+        eleitorRepo.adicionarEleitor(novo);
+        System.out.println("✅ Eleitor adicionado.");
+    }
+
+    public boolean editarEleitor(int id, String novoNome, String novaPassword) {
+        Eleitor eleitor = eleitorRepo.getEleitorPorId(id);
+        if (eleitor != null) {
+            eleitor.setNome(novoNome);
+            eleitor.setPassword(novaPassword);
+            utilizadorRepo.editarUtilizador(eleitor);
+            eleitorRepo.atualizarEleitor(eleitor);
+            return true;
+        }
+        return false;
+    }
+
+    public void removerEleitor(int id) {
+        eleitorRepo.removerEleitor(id);
+        utilizadorRepo.removerUtilizador(id);
+    }
 }
