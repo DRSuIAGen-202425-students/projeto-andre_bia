@@ -1,6 +1,10 @@
 package model;
 
-public abstract class Utilizador {
+import java.io.Serializable;
+
+public abstract class Utilizador implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int id;
     private String nome;

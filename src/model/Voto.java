@@ -1,8 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Voto {
+public class Voto implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int idVoto;
     private int idEleitor;

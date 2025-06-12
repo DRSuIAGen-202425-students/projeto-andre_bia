@@ -1,6 +1,10 @@
 package model;
 
-public class Eleitor extends Utilizador {
+import java.io.Serializable;
+
+public class Eleitor extends Utilizador implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private boolean votou;
 

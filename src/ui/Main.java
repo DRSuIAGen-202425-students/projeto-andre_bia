@@ -213,13 +213,15 @@ public class Main {
     }
 
     private static void seedDados() {
-        Administrador admin = new Administrador(1, "Admin", "admin", "admin123");
-        Eleitor eleitor = new Eleitor(2, "Maria", "maria", "1234");
-        utilizadorRepo.adicionarUtilizador(admin);
-        utilizadorRepo.adicionarUtilizador(eleitor);
-        eleitorRepo.adicionarEleitor(eleitor);
+        if (utilizadorRepo.listarUtilizadores().isEmpty()) {
+            Administrador admin = new Administrador(1, "Admin", "admin", "admin123");
+            Eleitor eleitor = new Eleitor(2, "Maria", "maria", "1234");
+            utilizadorRepo.adicionarUtilizador(admin);
+            utilizadorRepo.adicionarUtilizador(eleitor);
+            eleitorRepo.adicionarEleitor(eleitor);
 
-        candidatoRepo.adicionarCandidato(new Candidato(1, "Carlos Silva", "Partido A"));
-        candidatoRepo.adicionarCandidato(new Candidato(2, "Ana Costa", "Partido B"));
+            candidatoRepo.adicionarCandidato(new Candidato(1, "Carlos Silva", "Partido A"));
+            candidatoRepo.adicionarCandidato(new Candidato(2, "Ana Costa", "Partido B"));
+        }
     }
 }

@@ -1,16 +1,23 @@
 package repository;
 
 import model.Voto;
+import util.FileStorageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class VotoRepository {
 
+    private final String ficheiro = "votos.dat";
     private List<Voto> votos;
 
     public VotoRepository() {
-        this.votos = new ArrayList<>();
+        List<Voto> dadosCarregados = FileStorageUtil.carregar(ficheiro);
+        if (dadosCarregados != null) {
+            votos = dadosCarregados;
+        } else {
+            votos = new ArrayList<>();
+        }
     }
 
     /**
@@ -20,6 +27,7 @@ public class VotoRepository {
      */
     public void adicionarVoto(Voto voto) {
         votos.add(voto);
+        salvar();
     }
 
     /**
@@ -39,5 +47,9 @@ public class VotoRepository {
      */
     public List<Voto> listarTodos() {
         return new ArrayList<>(votos);
+    }
+
+    private void salvar() {
+        FileStorageUtil.guardar(ficheiro, votos);
     }
 }
