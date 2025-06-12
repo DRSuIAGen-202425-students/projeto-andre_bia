@@ -54,12 +54,17 @@ public class VotacaoService {
     }
 
     public void votar(Eleitor eleitor, Candidato candidato) {
+
         if (!votacao.isAtiva()) {
             throw new IllegalStateException("⚠️ A votação não está ativa.");
         }
 
         if (eleitor.isVotou()) {
             throw new IllegalStateException("❌ Este eleitor já votou.");
+        }
+
+        if(candidato == null) {
+            throw new NullPointerException("❌ Este candidato não existe.");
         }
 
         // Regista o voto

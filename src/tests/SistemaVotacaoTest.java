@@ -61,7 +61,7 @@ public class SistemaVotacaoTest {
     @Test
     void testGestaoCandidatos() {
         candidatosService.inserir("João", "Partido X");
-        Candidato c = candidatosService.listarCandidatos().get(0);
+        Candidato c = candidatosService.listarCandidatos().get(candidatosService.listarCandidatos().size() - 1);
         assertEquals("João", c.getNome());
 
         candidatosService.editar(c.getId(), "João Silva", "Partido Y");
@@ -158,7 +158,7 @@ public class SistemaVotacaoTest {
         votacaoService.iniciarVotacao();
 
         Exception ex = assertThrows(NullPointerException.class, () -> votacaoService.votar(eleitor, null));
-        assertEquals("❌ Este eleitor já votou.", ex.getMessage()); // Caso já tenha votado, senão adapta
+        assertEquals("❌ Este candidato não existe.", ex.getMessage()); // Caso já tenha votado, senão adapta
     }
 
     @Test
