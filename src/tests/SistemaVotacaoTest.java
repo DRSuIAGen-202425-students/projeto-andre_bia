@@ -61,7 +61,7 @@ public class SistemaVotacaoTest {
     @Test
     void testGestaoCandidatos() {
         candidatosService.inserir("João", "Partido X");
-        Candidato c = candidatosService.listarCandidatos().getFirst();
+        Candidato c = candidatosService.listarCandidatos().get(0);
         assertEquals("João", c.getNome());
 
         candidatosService.editar(c.getId(), "João Silva", "Partido Y");

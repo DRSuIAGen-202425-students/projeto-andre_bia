@@ -38,7 +38,12 @@ public class VotacaoService {
     public void encerrarVotacao() {
         if (votacao.isAtiva()) {
             votacao.encerrarVotacao();
-            System.out.println("🛑 Votação encerrada com sucesso.");
+
+            for (Eleitor eleitor : eleitorRepository.listarEleitores()) {
+                eleitor.setVotou(false);
+            }
+
+            System.out.println("🛑 Votação encerrada com sucesso e estado dos eleitores reiniciado.");
         } else {
             System.out.println("⚠️ A votação já está encerrada ou não foi iniciada.");
         }
